@@ -31,7 +31,7 @@ https://apkcombo.com/id/termux/com.termux/old-versions/0.119.1/
 git pull
 
 ## Addition
-For live proxies, check the file 'proxy-live.txt' or 'proxy-only.txt'
+For live proxies, check the file 'proxy.txt' or 'new-proxy.txt'
 
 The module is included, but if there isn't a module installed, you can install it manually
 
