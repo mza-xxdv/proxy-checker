@@ -1,7 +1,7 @@
 # 🕵️‍♂️ Proxy Checker
 
 # Preview
-![image_2023-07-02_20-56-25.png!](\img\image_2023-07-02_20-56-25.png)
+![image_2023-07-02_20-56-25.png!](img\image_2023-07-02_20-56-25.png)
 
 
 ## 🚀 Using Vscode
