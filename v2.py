@@ -172,14 +172,14 @@ def main():
 
     except KeyboardInterrupt:
         proxy_die = total_proxies - proxy_live
-        print(f"\n{cyan}Execution was manually terminated. Proxy Live: ({proxy_live}/{total_proxies}){blank}")
-        print(f"{cyan}\nDone! Proxy Live: ({proxy_live}/{total_proxies})\n{blank}")
+        print(f"{cyan}\nDone! Proxy Checked: {total_proxies}")
+        print(f"{janda}Invalid Proxies: {invalid_proxies}{blank}")
+        print(f"{green}Proxy Live: {proxy_live}{blank}")
+        print(f"{red}Proxy Die: {proxy_die}{blank}\n")
         print(f"HTTP: {live_proxy_types['http']}")
         print(f"HTTPS: {live_proxy_types['https']}")
         print(f"SOCKS4: {live_proxy_types['socks4']}")
         print(f"SOCKS5: {live_proxy_types['socks5']}\n")
-        print(f"Invalid Proxies: {invalid_proxies}\n")
-        print(f"Proxy Die: {proxy_die}\n")
         end_time = time.time()
         elapsed_time = end_time - start_time
         print_elapsed_time(elapsed_time)
