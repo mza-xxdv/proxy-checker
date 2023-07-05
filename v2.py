@@ -6,14 +6,16 @@ import time
 
 red = '\033[91m'  # merah
 green = '\033[92m'  # hijau
+yellow = '\033[33m' # kuning
 cyan = '\033[96m'  # cyan
 light_grey = '\033[37m' # putih abu
+janda = '\033[35m' # ungu
 blank = '\033[0m'  # default
 
-successful_proxies = 0
+proxy_live = 0
 invalid_proxies = 0
 total_proxies = 0
-successful_proxy_types = {"http": 0, "https": 0, "socks4": 0, "socks5": 0}
+live_proxy_types = {"http": 0, "https": 0, "socks4": 0, "socks5": 0}
 
 print(
     green
@@ -76,13 +78,13 @@ def get_proxy_type(proxy):
 
 
 def check(proxy, idx, total, filename):
-    global successful_proxies, total_proxies, invalid_proxies
+    global proxy_live, total_proxies, invalid_proxies
     rand_ua = random.choice(ua)
     session.headers.update({"User-Agent": rand_ua})
 
     proxy_type, elapsed_time = get_proxy_type(proxy)
     if proxy_type is None:
-        print(f"{red}[x] [{idx}/{total}] {proxy} Proxy is invalid or unreachable.{blank}")
+        print(f"{janda}[x] [{idx}/{total}] {proxy} Proxy is invalid or unreachable.{blank}")
         invalid_proxies += 1
         return
 
@@ -99,8 +101,8 @@ def check(proxy, idx, total, filename):
                 if not os.path.isfile(filepath) or proxy not in open(filepath).read():
                     with open(filepath, 'a') as file:
                         file.write(f"{proxy}\n")
-            successful_proxies += 1
-            successful_proxy_types[proxy_type] += 1
+            proxy_live += 1
+            live_proxy_types[proxy_type] += 1
     except (requests.exceptions.Timeout, requests.exceptions.ProxyError, requests.exceptions.ConnectTimeout):
         print(f"{red}[x] [{idx}/{total}] {proxy} | {proxy_type.upper()} | Error, Bad Proxy!{blank}")
 
@@ -138,7 +140,7 @@ def check_proxies_from_file():
 
 def print_elapsed_time(elapsed_time):
     if elapsed_time < 60:
-        print(f"Elapsed time: {round(elapsed_time)} seconds")
+        print(f"Takes time: {round(elapsed_time)} seconds")
     else:
         minutes = round(elapsed_time // 60)
         seconds = round(elapsed_time % 60)
@@ -169,18 +171,29 @@ def main():
             print_elapsed_time(elapsed_time)
 
     except KeyboardInterrupt:
-        print(f"\n{cyan}Execution was manually terminated. Proxy Live: ({successful_proxies}/{total_proxies}){blank}")
+        proxy_die = total_proxies - proxy_live
+        print(f"\n{cyan}Execution was manually terminated. Proxy Live: ({proxy_live}/{total_proxies}){blank}")
+        print(f"{cyan}\nDone! Proxy Live: ({proxy_live}/{total_proxies})\n{blank}")
+        print(f"HTTP: {live_proxy_types['http']}")
+        print(f"HTTPS: {live_proxy_types['https']}")
+        print(f"SOCKS4: {live_proxy_types['socks4']}")
+        print(f"SOCKS5: {live_proxy_types['socks5']}\n")
+        print(f"Invalid Proxies: {invalid_proxies}\n")
+        print(f"Proxy Die: {proxy_die}\n")
         end_time = time.time()
         elapsed_time = end_time - start_time
         print_elapsed_time(elapsed_time)
 
     finally:
-        print(f"{cyan}\nDone! Live Proxies: ({successful_proxies}/{total_proxies})\n{blank}")
-        print(f"HTTP: {successful_proxy_types['http']}")
-        print(f"HTTPS: {successful_proxy_types['https']}")
-        print(f"SOCKS4: {successful_proxy_types['socks4']}")
-        print(f"SOCKS5: {successful_proxy_types['socks5']}\n")
-        print(f"Invalid Proxies: {invalid_proxies}\n")
+        proxy_die = total_proxies - proxy_live
+        print(f"{cyan}\nDone! Proxy Checked: {total_proxies}")
+        print(f"{janda}Invalid Proxies: {invalid_proxies}{blank}")
+        print(f"{green}Proxy Live: {proxy_live}{blank}")
+        print(f"{red}Proxy Die: {proxy_die}{blank}\n")
+        print(f"HTTP: {live_proxy_types['http']}")
+        print(f"HTTPS: {live_proxy_types['https']}")
+        print(f"SOCKS4: {live_proxy_types['socks4']}")
+        print(f"SOCKS5: {live_proxy_types['socks5']}\n")
         end_time = time.time()
         elapsed_time = end_time - start_time
         print_elapsed_time(elapsed_time)
