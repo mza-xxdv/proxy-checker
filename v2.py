@@ -7,7 +7,13 @@ import time
 red = '\033[91m'  # merah
 green = '\033[92m'  # hijau
 cyan = '\033[96m'  # cyan
+light_grey = '\033[37m' # putih abu
 blank = '\033[0m'  # default
+
+successful_proxies = 0
+invalid_proxies = 0
+total_proxies = 0
+successful_proxy_types = {"http": 0, "https": 0, "socks4": 0, "socks5": 0}
 
 print(
     green
@@ -53,49 +59,53 @@ def get_proxy_type(proxy):
     proxy_types = ["http", "https", "socks4", "socks5"]
     for proxy_type in proxy_types:
         try:
+            start_time = time.time()
             response = requests.get(
-                "http://ip-api.com/json",
-                proxies={proxy_type: proxy_type + "://" + str(proxy)},
+                "http://api.ipify.org?format=json",
+                proxies={proxy_type: proxy_type + "://" + proxy},
                 timeout=5,
             )
-            if response.status_code == 200:
-                return proxy_type
+            elapsed_time = round((time.time() - start_time) * 1000)
+            if response.status_code == 200 and response.json().get('ip') != None:
+                return proxy_type, elapsed_time
         except requests.exceptions.RequestException:
             continue
-    return None
+    return None, None
+
+
 
 
 def check(proxy, idx, total, filename):
+    global successful_proxies, total_proxies, invalid_proxies
     rand_ua = random.choice(ua)
     session.headers.update({"User-Agent": rand_ua})
 
-    proxy_type = get_proxy_type(proxy)
+    proxy_type, elapsed_time = get_proxy_type(proxy)
     if proxy_type is None:
         print(f"{red}[x] [{idx}/{total}] {proxy} Proxy is invalid or unreachable.{blank}")
+        invalid_proxies += 1
         return
 
+    total_proxies += 1
     try:
-        start_time = time.time()
         response = session.get(
-            url, proxies={proxy_type: proxy_type + "://" + str(proxy)}, timeout=10
+            url, proxies={proxy_type: proxy_type + "://" + proxy}, timeout=10
         )
-        elapsed_time = round((time.time() - start_time) * 1000)
 
         if response.status_code == 200:
-            print(f"{green}[#] [{idx}/{total}] {proxy} | Type: {proxy_type} | 200 OK! | Exec: {elapsed_time}ms {blank}")
+            print(f"{green}[#] [{idx}/{total}] {proxy} | {proxy_type.upper()} | 200 OK! | Exec: {elapsed_time}ms {blank}")
             with open(filename, 'a') as file:
                 filepath = filename
                 if not os.path.isfile(filepath) or proxy not in open(filepath).read():
                     with open(filepath, 'a') as file:
                         file.write(f"{proxy}\n")
+            successful_proxies += 1
+            successful_proxy_types[proxy_type] += 1
+    except (requests.exceptions.Timeout, requests.exceptions.ProxyError, requests.exceptions.ConnectTimeout):
+        print(f"{red}[x] [{idx}/{total}] {proxy} | {proxy_type.upper()} | Error, Bad Proxy!{blank}")
 
-    except requests.exceptions.Timeout:
-        if elapsed_time > 2000:
-            return
-        print(f"{red}[x] [{idx}/{total}] {proxy} | Type: {proxy_type} | Error 404!{blank}")
 
-    except (requests.exceptions.ProxyError, requests.exceptions.ConnectTimeout):
-        print(f"{red}[x] [{idx}/{total}] {proxy} | Type: {proxy_type} | Error 404!{blank}")
+
 
 def check_proxies_from_url():
     proxysource = input("Input the URL (Ex: https://raw.githubusercontent.com/....)\nURL: ")
@@ -126,25 +136,55 @@ def check_proxies_from_file():
         for idx, proxy in enumerate(proxylist, start=1):
             executor.submit(check, proxy, idx, len(proxylist), 'new-proxy.txt')
 
+def print_elapsed_time(elapsed_time):
+    if elapsed_time < 60:
+        print(f"Elapsed time: {round(elapsed_time)} seconds")
+    else:
+        minutes = round(elapsed_time // 60)
+        seconds = round(elapsed_time % 60)
+        print(f"Takes time: {minutes} minutes {seconds} seconds")
+
 def main():
-    while True:
-        print("Please select a method to check the proxy: ")
-        print("1. Check from URLs")
-        print("2. Check from .txt file")
+    try:
+        while True:
+            print("Please select a method to check the proxy: ")
+            print("1. Check from URLs")
+            print("2. Check from .txt file")
 
-        choice = input("\nEnter your option (1/2): ")
+            choice = input("\nEnter your option (1/2): ")
 
-        if choice == '1':
-            check_proxies_from_url()
-            break
-        elif choice == '2':
-            check_proxies_from_file()
-            break
-        else:
-            print(f"{red}Invalid choice! Please try again.{blank}\n")
+            start_time = time.time()
 
-    print("\nDone!\n")
+            if choice == '1':
+                check_proxies_from_url()
+                break
+            elif choice == '2':
+                check_proxies_from_file()
+                break
+            else:
+                print(f"{red}Invalid choice! Please try again.{blank}\n")
 
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print_elapsed_time(elapsed_time)
+
+    except KeyboardInterrupt:
+        print(f"\n{cyan}Execution was manually terminated. Proxy Live: ({successful_proxies}/{total_proxies}){blank}")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print_elapsed_time(elapsed_time)
+
+    finally:
+        print(f"{cyan}\nDone! Live Proxies: ({successful_proxies}/{total_proxies})\n{blank}")
+        print(f"HTTP: {successful_proxy_types['http']}")
+        print(f"HTTPS: {successful_proxy_types['https']}")
+        print(f"SOCKS4: {successful_proxy_types['socks4']}")
+        print(f"SOCKS5: {successful_proxy_types['socks5']}\n")
+        print(f"Invalid Proxies: {invalid_proxies}\n")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print_elapsed_time(elapsed_time)
+        print('\n')
 
 if __name__ == "__main__":
     main()
