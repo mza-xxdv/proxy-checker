@@ -44,7 +44,8 @@ print(
     + blank
 )
 
-url = "https://www.aparat.com/v/SGc8T" # '''Ganti ini untuk cek website yg lain'''
+# url = "https://www.aparat.com/v/SGc8T" # '''Ganti ini untuk cek website yg lain'''
+url = "https://ns.cloudflare.com/" # '''Ganti ini untuk cek website yg lain'''
 proxysource = "https://raw.githubusercontent.com/Bardiafa/Proxy-Leecher/main/proxies.txt" #'''Ganti ini untuk cek proxy yg lain'''
 
 
