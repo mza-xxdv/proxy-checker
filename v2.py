@@ -52,7 +52,8 @@ def import_file(name_file):
     return list
 
 ua = import_file('ua.txt')
-url = "https://www.speedtest.net/"
+# url = "https://www.speedtest.net/"
+url = "https://ns.cloudflare.com/"
 
 session = requests.Session()
 
