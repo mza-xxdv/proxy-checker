@@ -53,7 +53,8 @@ def import_file(name_file):
 
 ua = import_file('ua.txt')
 # url = "https://www.speedtest.net/"
-url = "https://ns.cloudflare.com/"
+# url = "https://ns.cloudflare.com/"
+url = "http://api.ipify.org?format=json"
 
 session = requests.Session()
 
